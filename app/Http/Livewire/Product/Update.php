@@ -5,12 +5,16 @@ namespace App\Http\Livewire\Product;
 use App\Models\Product;
 use Livewire\Component;
 
-class Create extends Component
+class Update extends Component
 {
 
+
+    public $productId;
     public $name_product;
     public $code_product;
     public $price;
+
+    protected $listeners = ['updateProduct'];
 
     protected $rules = [
         'name_product' => 'required|min:6',
@@ -26,20 +30,25 @@ class Create extends Component
         'code_product.min:6' => 'Code Product minimal 6 huruf',
     ];
 
-    public function submit()
+    public function update()
     {
         $this->validate();
 
         // Execution doesn't reach here if validation fails.
 
-        $product = Product::create([
-            'name_product' => $this->name_product,
-            'code_product' => $this->code_product,
-            'price' => $this->price
-           
-        ]);
+        if($this->productId){
+            $product = Product::where('id', $this->productId)->first();
+            $product->update([
+                'name_product' => $this->name_product,
+                'code_product' => $this->code_product,
+                'price' => $this->price
+               
+            ]);
+    
+        }
 
-        $this->emit('storeProduct', $product);
+        
+        $this->emit('newUpdateProduct', $product);
 
         $this->deleteInput();
 
@@ -52,8 +61,15 @@ class Create extends Component
         $this->price = null;
     }
 
+    public function updateProduct($product){
+        $this->productId = $product['id'];
+        $this->name_product = $product['name_product'];
+        $this->code_product = $product['code_product'];
+        $this->price = $product['price'];
+    }
+
     public function render()
     {
-        return view('livewire.product.create');
+        return view('livewire.product.update');
     }
 }
